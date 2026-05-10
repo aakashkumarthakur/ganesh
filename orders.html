@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Ganesh Hotel — Order Management System</title>
+
+  <link rel="manifest" href="manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Ganesh Hotel" />
+
+  <meta name="theme-color" content="#1a1410" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="application-name" content="Ganesh Hotel Orders" />
+  <meta name="description" content="Table order management system for Ganesh Hotel staff." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── Back to Hotel button ── */
+    .back-home {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-family: var(--font-mono);
+      font-size: 9px; letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #c8b98a;
+      text-decoration: none;
+      border: 1px solid #3a342a;
+      padding: 6px 12px;
+      border-radius: var(--radius);
+      transition: border-color 0.2s, color 0.2s;
+      margin-left: 8px;
+    }
+    .back-home:hover { border-color: var(--gold); color: var(--gold); }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">
+        <span class="logo-icon">⬡</span>
+        <span class="logo-text">Ganesh Hotel</span>
+      </div>
+      <span class="tagline">Order System</span>
+    </div>
+    <div class="header-right">
+      <div class="live-clock" id="clock"></div>
+      <a href="index.html" class="back-home">← Hotel</a>
+      <button class="header-install-btn" id="headerInstallBtn" onclick="showInstallGuide()" title="Install App">
+        <span class="install-btn-icon">📲</span>
+        <span class="install-btn-label">Install</span>
+      </button>
+      <div class="status-wrap">
+        <div class="status-dot"></div>
+        <span class="status-label">Live</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- STATS BAR -->
+  <div class="stats-bar">
+    <div class="stat">
+      <span class="stat-num" id="stat-active">0</span>
+      <span class="stat-label">Active</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat">
+      <span class="stat-num" id="stat-free">12</span>
+      <span class="stat-label">Free</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat">
+      <span class="stat-num" id="stat-items">0</span>
+      <span class="stat-label">Items</span>
+    </div>
+  </div>
+
+  <!-- OFFLINE BANNER -->
+  <div class="offline-banner" id="offlineBanner">
+    <span>⚠ You are offline — orders are saved locally</span>
+  </div>
+
+  <!-- TABLE GRID -->
+  <main class="main">
+    <div class="section-header">
+      <div class="section-label">Floor Plan</div>
+      <div class="legend">
+        <span><span class="dot free"></span>Free</span>
+        <span><span class="dot active"></span>Active</span>
+      </div>
+    </div>
+    <div class="grid" id="tableGrid"></div>
+  </main>
+
+  <!-- MODAL OVERLAY -->
+  <div class="overlay" id="overlay"></div>
+
+  <!-- ORDER MODAL -->
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="drag-handle-wrap" id="dragHandle">
+      <div class="drag-handle"></div>
+    </div>
+
+    <div class="modal-header">
+      <div class="modal-title-group">
+        <div class="modal-badge" id="modalBadge">T7</div>
+        <div>
+          <h2 class="modal-title" id="modalTitle">Table 7</h2>
+          <p class="modal-subtitle" id="modalSubtitle">No orders yet</p>
+        </div>
+      </div>
+      <button class="close-btn" onclick="closeModal()" aria-label="Close">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <label class="field-label" for="orderTextarea">Order Details</label>
+      <textarea
+        class="order-textarea"
+        id="orderTextarea"
+        placeholder="Type order details here…&#10;e.g. 5 plates Momos&#10;     2 Chowmein&#10;     3 Butter Tea"
+        autocomplete="off"
+        autocorrect="off"
+        spellcheck="false"
+      ></textarea>
+
+      <div class="textarea-footer">
+        <span class="char-count"><span id="charCount">0</span> chars</span>
+        <span class="shortcut-hint">Ctrl+S to save</span>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-clear" onclick="clearOrder()">Clear</button>
+        <button class="btn-save" onclick="saveOrder()">
+          Save Order <span class="btn-icon">✓</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="saved-preview" id="savedPreview">
+      <div class="preview-label">
+        <span class="preview-dot">✓</span>
+        <span>Saved Order</span>
+        <span class="preview-time" id="previewTime"></span>
+      </div>
+      <pre class="preview-content" id="previewContent"></pre>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- INSTALL GUIDE MODAL -->
+  <div class="overlay" id="installOverlay"></div>
+  <div class="install-modal" id="installModal" role="dialog" aria-modal="true" aria-label="Install Guide">
+    <div class="install-modal-header">
+      <div class="install-modal-title">
+        <span>📲</span>
+        Install Ganesh Hotel App
+      </div>
+      <button class="close-btn" onclick="hideInstallGuide()" aria-label="Close">✕</button>
+    </div>
+    <div class="install-modal-body">
+
+      <div class="install-section" id="androidSection">
+        <div class="install-platform-badge android">Android / Chrome</div>
+        <button class="install-now-btn" id="androidInstallBtn">
+          <span>⬇ Install Now</span>
+          <span class="install-now-sub">Tap to add to Home Screen</span>
+        </button>
+        <p class="install-note">Or: Chrome menu (⋮) → <strong>Add to Home screen</strong></p>
+      </div>
+
+      <div class="install-section" id="iosSection">
+        <div class="install-platform-badge ios">iPhone / iPad — Safari</div>
+        <div class="install-steps">
+          <div class="install-step">
+            <div class="step-num">1</div>
+            <div class="step-body">Tap the <strong>Share</strong> button <span class="step-icon-big">⬆</span> at the bottom of Safari</div>
+          </div>
+          <div class="install-step">
+            <div class="step-num">2</div>
+            <div class="step-body">Scroll down and tap <span class="step-chip">Add to Home Screen</span></div>
+          </div>
+          <div class="install-step">
+            <div class="step-num">3</div>
+            <div class="step-body">Tap <span class="step-chip">Add</span> in the top-right corner</div>
+          </div>
+        </div>
+        <p class="install-note">⚠ Must use <strong>Safari</strong> on iPhone/iPad</p>
+      </div>
+
+      <div class="install-section" id="desktopSection">
+        <div class="install-platform-badge desktop">Desktop (Chrome / Edge)</div>
+        <div class="install-steps">
+          <div class="install-step">
+            <div class="step-num">1</div>
+            <div class="step-body">Look for <span class="step-chip">⊕ Install</span> in the address bar</div>
+          </div>
+          <div class="install-step">
+            <div class="step-num">2</div>
+            <div class="step-body">Click it and select <span class="step-chip">Install</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="install-already" id="alreadyInstalled">
+        <span>✅ Ganesh Hotel app is already installed on this device!</span>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
